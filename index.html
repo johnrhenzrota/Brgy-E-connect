@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,194 +9,344 @@
 </head>
 <body>
 
-    <!-- LOGIN WRAPPER -->
+    <!-- LOGIN PAGE -->
     <div id="loginWrapper">
         <header>
             <div class="header-brand">
-                <img src="logo.jpg" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+                <img src="logo.jpg" alt="Logo" class="header-logo"
+                     onerror="this.style.display='none'">
                 <h1>E-BrgyConnect</h1>
             </div>
-            <p>Welcome to E-BrgyConnect!</p>
+            <p>Barangay Information and Document Request Management System</p>
         </header>
 
         <div class="login-container">
             <div class="login-header">
                 <h2>Barangay Staff Portal</h2>
-                <p>Please sign in to access the system</p>
+                <p>Please sign in to access the system.</p>
             </div>
-            
+
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">Staff ID / Username</label>
-                    <input type="text" id="username" required placeholder="Enter admin username">
+                    <input type="text" id="username"
+                           placeholder="Enter username" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter password">
+                    <input type="password" id="password"
+                           placeholder="Enter password" required>
                 </div>
-                
-                <div id="errorMsg" class="error-msg">Invalid Username or Password!</div>
 
-                <button type="submit" class="btn-login">Sign In</button>
+                <p id="errorMsg" class="error-msg"></p>
+
+                <button type="submit" class="btn-primary">
+                    Sign In
+                </button>
             </form>
 
             <div class="login-footer">
-                &copy; 2026 Barangay Management System
+                © 2026 Barangay Management System
             </div>
         </div>
     </div>
 
-    <!-- DASHBOARD WRAPPER -->
+
+    <!-- MAIN DASHBOARD -->
     <div id="dashboardWrapper">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-top">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div>
                 <div class="brand-mini">
-                    <img src="logo.jpg" alt="Logo" onerror="this.style.display='none'">
+                    <img src="logo.jpg" alt="Logo"
+                         onerror="this.style.display='none'">
                     <div>
-                        <h4>E-BrgyConnect</h4>
+                        <h3>E-BrgyConnect</h3>
                         <p>Staff Portal</p>
                     </div>
                 </div>
-                <ul class="nav-menu">
-                    <li class="active" id="navDashboard"><a href="#">Dashboard</a></li>
-                    <li id="navRequests"><a href="#">Document Requests</a></li>
-                    <li id="navResidents"><a href="#">Residents</a></li>
-                </ul>
-            </div>
-            <div class="sidebar-footer">
-                Barangay Management System
-            </div>
-        </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
+                <nav class="nav-menu">
+                    <button class="nav-link active" data-section="dashboard">
+                        Dashboard
+                    </button>
+
+                    <button class="nav-link" data-section="requests">
+                        Document Requests
+                        <span id="pendingNavCount" class="nav-count">0</span>
+                    </button>
+
+                    <button class="nav-link" data-section="residents">
+                        Residents
+                    </button>
+
+                    <button class="nav-link" data-section="notifications">
+                        Notifications
+                        <span id="notificationNavCount" class="nav-count">0</span>
+                    </button>
+
+                    <button class="nav-link" data-section="profile">
+                        Staff Profile
+                    </button>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-btn">
+                    Logout
+                </button>
+                <p>Barangay Management System</p>
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
             <div class="top-navbar">
-                <div class="user-pill">Barangay Staff Admin</div>
+                <span id="currentDate"></span>
+                <div class="user-pill">
+                    <span id="loggedInStaff">Barangay Staff</span>
+                </div>
             </div>
 
             <div class="dashboard-body">
-                <!-- SECTION 1: DASHBOARD -->
-                <div id="sectionDashboard" class="content-section">
+
+                <!-- DASHBOARD SECTION -->
+                <section id="section-dashboard" class="content-section">
+
                     <div class="page-title-area">
                         <span>Barangay Administration</span>
                         <h2>Dashboard</h2>
+                        <p>Overview of barangay document requests.</p>
                     </div>
 
-                    <!-- Stats Grid -->
                     <div class="stats-grid">
+
                         <div class="stat-card">
                             <p>Total Requests</p>
-                            <h3>4</h3>
+                            <h3 id="totalRequests">0</h3>
                         </div>
+
                         <div class="stat-card">
                             <p>Pending</p>
-                            <h3>2</h3>
+                            <h3 id="pendingRequests">0</h3>
                         </div>
+
                         <div class="stat-card">
                             <p>Processing</p>
-                            <h3>1</h3>
+                            <h3 id="processingRequests">0</h3>
                         </div>
+
                         <div class="stat-card">
                             <p>Completed</p>
-                            <h3>1</h3>
+                            <h3 id="completedRequests">0</h3>
                         </div>
+
                     </div>
 
-                    <!-- Recent Document Requests Box -->
                     <div class="card-box">
                         <div class="card-box-header">
                             <h3>Recent Document Requests</h3>
+                            <button class="text-btn" data-go="requests">
+                                View All
+                            </button>
                         </div>
-                        <div class="card-box-content">
-                            <div class="request-item">
-                                <span class="request-title">Barangay Clearance</span>
-                                <span class="request-sub">Juan Dela Cruz — <span class="badge pending">Pending</span></span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">Certificate of Residency</span>
-                                <span class="request-sub">Maria Santos — <span class="badge processing">Processing</span></span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">Certificate of Indigency</span>
-                                <span class="request-sub">Ana Reyes — <span class="badge completed">Completed</span></span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">Barangay ID</span>
-                                <span class="request-sub">Pedro Garcia — <span class="badge canceled">Canceled</span></span>
-                            </div>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Resident</th>
+                                        <th>Document</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentRequestsTable"></tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
 
-                <!-- SECTION 2: DOCUMENT REQUESTS -->
-                <div id="sectionRequests" class="content-section" style="display: none;">
+                    <div class="card-box">
+                        <div class="card-box-header">
+                            <h3>Recent Activities</h3>
+                        </div>
+                        <div id="recentActivities" class="activity-list"></div>
+                    </div>
+
+                </section>
+
+
+                <!-- DOCUMENT REQUESTS SECTION -->
+                <section id="section-requests" class="content-section hidden">
+
                     <div class="page-title-area">
                         <span>Management</span>
                         <h2>Document Requests</h2>
+                        <p>Review and manage resident document requests.</p>
                     </div>
-                    <div class="card-box">
-                        <div class="card-box-header">
-                            <h3>All Client Requests</h3>
-                        </div>
-                        <div class="card-box-content">
-                            <div class="request-item">
-                                <span class="request-title">REQ-2026-001: Barangay Clearance</span>
-                                <span class="request-sub">Juan Dela Cruz (Purok 1) — <span class="badge pending">Pending</span></span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">REQ-2026-002: Certificate of Residency</span>
-                                <span class="request-sub">Maria Santos (Purok 3) — <span class="badge processing">Processing</span></span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">REQ-2026-003: Certificate of Indigency</span>
-                                <span class="request-sub">Ana Reyes (Purok 2) — <span class="badge completed">Completed</span></span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">REQ-2026-004: Barangay ID</span>
-                                <span class="request-sub">Pedro Garcia (Purok 4) — <span class="badge canceled">Canceled</span></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- SECTION 3: RESIDENTS -->
-                <div id="sectionResidents" class="content-section" style="display: none;">
+                    <div class="card-box">
+
+                        <div class="toolbar">
+                            <input type="search" id="requestSearch"
+                                   placeholder="Search request or resident...">
+
+                            <select id="statusFilter">
+                                <option value="All">All Statuses</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Canceled">Canceled</option>
+                            </select>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Resident</th>
+                                        <th>Document Type</th>
+                                        <th>Date Submitted</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestsTable"></tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </section>
+
+
+                <!-- RESIDENTS SECTION -->
+                <section id="section-residents" class="content-section hidden">
+
                     <div class="page-title-area">
                         <span>Management</span>
                         <h2>Registered Residents</h2>
+                        <p>View registered resident information.</p>
                     </div>
+
+                    <div class="card-box">
+
+                        <div class="toolbar">
+                            <input type="search" id="residentSearch"
+                                   placeholder="Search resident name or ID...">
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Resident ID</th>
+                                        <th>Full Name</th>
+                                        <th>Address</th>
+                                        <th>Contact Number</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="residentsTable"></tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </section>
+
+
+                <!-- NOTIFICATIONS SECTION -->
+                <section id="section-notifications" class="content-section hidden">
+
+                    <div class="page-title-area">
+                        <span>System</span>
+                        <h2>Notifications</h2>
+                        <p>Recent system activities and request updates.</p>
+                    </div>
+
                     <div class="card-box">
                         <div class="card-box-header">
-                            <h3>Resident List</h3>
+                            <h3>Notification History</h3>
+                            <button id="markAllReadBtn" class="text-btn">
+                                Mark All as Read
+                            </button>
                         </div>
-                        <div class="card-box-content">
-                            <div class="request-item">
-                                <span class="request-title">Juan Dela Cruz</span>
-                                <span class="request-sub">Purok 1 — Active Resident</span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">Maria Santos</span>
-                                <span class="request-sub">Purok 3 — Active Resident</span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">Ana Reyes</span>
-                                <span class="request-sub">Purok 2 — Active Resident</span>
-                            </div>
-                            <div class="request-item">
-                                <span class="request-title">Pedro Garcia</span>
-                                <span class="request-sub">Purok 4 — Active Resident</span>
-                            </div>
-                        </div>
+
+                        <div id="notificationList"></div>
                     </div>
-                </div>
+
+                </section>
+
+
+                <!-- STAFF PROFILE SECTION -->
+                <section id="section-profile" class="content-section hidden">
+
+                    <div class="page-title-area">
+                        <span>Account</span>
+                        <h2>Staff Profile</h2>
+                        <p>View your staff account information.</p>
+                    </div>
+
+                    <div class="card-box profile-box">
+
+                        <div class="profile-row">
+                            <strong>Staff Name</strong>
+                            <span id="profileName">-</span>
+                        </div>
+
+                        <div class="profile-row">
+                            <strong>Username</strong>
+                            <span id="profileUsername">-</span>
+                        </div>
+
+                        <div class="profile-row">
+                            <strong>Position</strong>
+                            <span id="profilePosition">-</span>
+                        </div>
+
+                        <div class="profile-row">
+                            <strong>Account Type</strong>
+                            <span>Barangay Staff</span>
+                        </div>
+
+                    </div>
+
+                </section>
 
             </div>
+        </main>
+    </div>
+
+
+    <!-- DETAILS MODAL -->
+    <div id="detailsModal" class="modal hidden">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h3 id="modalTitle">Request Details</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+
+            <div id="modalBody"></div>
+
+            <div id="modalActions" class="modal-actions"></div>
+
         </div>
     </div>
 
-    <!-- Link JavaScript File -->
+
+    <!-- CONFIRMATION / MESSAGE -->
+    <div id="messageBox" class="message-box hidden"></div>
+
     <script src="script.js"></script>
+
 </body>
 </html>
