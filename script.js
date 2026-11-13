@@ -16,82 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 2. SAMPLE DATABASE
-    // =====================================
-
-    const defaultResidents = [
-        {
-            id: "RES-001",
-            name: "Juan Dela Cruz",
-            address: "Purok 1",
-            contact: "09123456789"
-        },
-        {
-            id: "RES-002",
-            name: "Maria Santos",
-            address: "Purok 3",
-            contact: "09234567890"
-        },
-        {
-            id: "RES-003",
-            name: "Ana Reyes",
-            address: "Purok 2",
-            contact: "09345678901"
-        },
-        {
-            id: "RES-004",
-            name: "Pedro Garcia",
-            address: "Purok 4",
-            contact: "09456789012"
-        }
-    ];
-
-    const defaultRequests = [
-        {
-            id: "REQ-2026-001",
-            residentId: "RES-001",
-            resident: "Juan Dela Cruz",
-            document: "Barangay Clearance",
-            date: "2026-11-10",
-            purpose: "Employment",
-            status: "Pending",
-            remarks: ""
-        },
-        {
-            id: "REQ-2026-002",
-            residentId: "RES-002",
-            resident: "Maria Santos",
-            document: "Certificate of Residency",
-            date: "2026-11-10",
-            purpose: "School Requirement",
-            status: "Processing",
-            remarks: ""
-        },
-        {
-            id: "REQ-2026-003",
-            residentId: "RES-003",
-            resident: "Ana Reyes",
-            document: "Certificate of Indigency",
-            date: "2026-11-11",
-            purpose: "Financial Assistance",
-            status: "Completed",
-            remarks: ""
-        },
-        {
-            id: "REQ-2026-004",
-            residentId: "RES-004",
-            resident: "Pedro Garcia",
-            document: "Barangay ID",
-            date: "2026-11-11",
-            purpose: "Identification",
-            status: "Canceled",
-            remarks: ""
-        }
-    ];
-
-
-    // =====================================
-    // 3. LOCAL STORAGE
+    // 2. RECORD STORAGE
     // =====================================
 
     function loadData(key, defaultData) {
@@ -110,8 +35,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    let residents = loadData("ebrgy_residents", defaultResidents);
-    let requests = loadData("ebrgy_requests", defaultRequests);
+    const emptyRecordsMigrationKey = "ebrgy_empty_records_migration_v1";
+
+    if (localStorage.getItem(emptyRecordsMigrationKey) !== "complete") {
+        localStorage.setItem("ebrgy_residents", JSON.stringify([]));
+        localStorage.setItem("ebrgy_requests", JSON.stringify([]));
+        localStorage.setItem("ebrgy_notifications", JSON.stringify([]));
+        localStorage.setItem(emptyRecordsMigrationKey, "complete");
+    }
+
+    let residents = loadData("ebrgy_residents", []);
+    let requests = loadData("ebrgy_requests", []);
     let notifications = loadData("ebrgy_notifications", []);
 
     function saveData() {
@@ -122,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 4. HTML ELEMENTS
+    // 3. HTML ELEMENTS
     // =====================================
 
     const loginWrapper = document.getElementById("loginWrapper");
@@ -155,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 5. HELPER FUNCTIONS
+    // 4. HELPER FUNCTIONS
     // =====================================
 
     function escapeHTML(value) {
@@ -223,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 6. LOGIN
+    // 5. LOGIN
     // =====================================
 
     loginForm.addEventListener("submit", function (e) {
@@ -278,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 7. NAVIGATION
+    // 6. NAVIGATION
     // =====================================
 
     function switchSection(sectionName) {
@@ -338,7 +272,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 8. DASHBOARD STATISTICS
+    // 7. DASHBOARD STATISTICS
     // =====================================
 
     function refreshDashboard() {
@@ -365,12 +299,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         document.getElementById("completedRequests").textContent = completed;
 
-        document.getElementById("pendingNavCount").textContent = pending;
+        const pendingNavCount = document.getElementById("pendingNavCount");
+        pendingNavCount.textContent = pending;
+        pendingNavCount.classList.toggle("hidden", pending === 0);
 
-        document.getElementById("notificationNavCount").textContent =
-            notifications.filter(function (item) {
-                return !item.read;
-            }).length;
+        updateNotificationCount();
 
         renderRecentRequests();
         renderActivities();
@@ -378,7 +311,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 9. RECENT REQUESTS
+    // 8. RECENT REQUESTS
     // =====================================
 
     function renderRecentRequests() {
@@ -410,7 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 10. DOCUMENT REQUEST MANAGEMENT
+    // 9. DOCUMENT REQUEST MANAGEMENT
     // =====================================
 
     function renderRequests() {
@@ -467,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 11. VIEW REQUEST DETAILS
+    // 10. VIEW REQUEST DETAILS
     // =====================================
 
     function viewRequest(id) {
@@ -550,7 +483,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 12. UPDATE REQUEST STATUS
+    // 11. UPDATE REQUEST STATUS
     // =====================================
 
     function updateRequestStatus(id, newStatus) {
@@ -592,7 +525,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 13. RESIDENT MANAGEMENT
+    // 12. RESIDENT MANAGEMENT
     // =====================================
 
     function renderResidents() {
@@ -642,7 +575,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 14. RESIDENT DETAILS
+    // 13. RESIDENT DETAILS
     // =====================================
 
     function viewResident(id) {
@@ -696,18 +629,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 15. NOTIFICATIONS
+    // 14. NOTIFICATIONS
     // =====================================
+
+    function updateNotificationCount() {
+        const notificationCount =
+            document.getElementById("notificationNavCount");
+        const unreadCount = notifications.filter(function (item) {
+            return !item.read;
+        }).length;
+
+        notificationCount.textContent = unreadCount;
+        notificationCount.classList.toggle("hidden", unreadCount === 0);
+    }
 
     function renderNotifications() {
 
         const notificationList =
             document.getElementById("notificationList");
 
-        document.getElementById("notificationNavCount").textContent =
-            notifications.filter(function (item) {
-                return !item.read;
-            }).length;
+        updateNotificationCount();
 
         if (notifications.length === 0) {
 
@@ -747,7 +688,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 16. RECENT ACTIVITIES
+    // 15. RECENT ACTIVITIES
     // =====================================
 
     function renderActivities() {
@@ -779,7 +720,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 17. MODAL CONTROLS
+    // 16. MODAL CONTROLS
     // =====================================
 
     document.getElementById("closeModal").addEventListener(
@@ -799,7 +740,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 18. TABLE ACTION EVENTS
+    // 17. TABLE ACTION EVENTS
     // =====================================
 
     requestsTable.addEventListener("click", function (e) {
@@ -828,7 +769,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // 19. LOGOUT
+    // 18. LOGOUT
     // =====================================
 
     logoutBtn.addEventListener("click", function () {
