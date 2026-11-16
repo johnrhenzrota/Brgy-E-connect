@@ -1,4 +1,3 @@
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -151,9 +150,25 @@ select:focus {
     flex-direction: column;
     justify-content: space-between;
     flex-shrink: 0;
+
+    /* hindi sasama sa scroll */
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    align-self: flex-start;
+    overflow: hidden;
+}
+
+/* wrapper ng brand + menu: kumukuha ng natitirang space */
+.sidebar > div:first-child {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .brand-mini {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -179,6 +194,9 @@ select:focus {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .nav-link {
@@ -211,8 +229,10 @@ select:focus {
 }
 
 .sidebar-footer {
+    flex-shrink: 0;
     border-top: 1px solid #e2e8f0;
     padding-top: 15px;
+    padding-bottom: 30px;   /* dagdagan para mas umangat ang Logout */
     text-align: center;
 }
 
@@ -241,6 +261,7 @@ select:focus {
     min-width: 0;
 }
 
+/* naka-lock sa taas habang nag-i-scroll */
 .top-navbar {
     height: 65px;
     background: white;
@@ -249,6 +270,10 @@ select:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 #currentDate {
@@ -433,21 +458,29 @@ tbody tr:hover {
     font-weight: 600;
 }
 
+/* Pending Request - GREY */
 .badge.pending {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+/* Processing - YELLOW */
+.badge.processing {
     background: #fef3c7;
     color: #92400e;
 }
 
-.badge.processing {
-    background: #e0f2fe;
-    color: #075985;
-}
-
+/* Ready to Pickup / Completed - GREEN */
+.badge.ready,
+.badge.ready-to-pickup,
+.badge.readytopickup,
+.badge.ready_to_pickup,
 .badge.completed {
     background: #dcfce7;
     color: #166534;
 }
 
+/* Rejected / Canceled - RED */
 .badge.rejected,
 .badge.canceled {
     background: #fee2e2;
@@ -480,6 +513,12 @@ tbody tr:hover {
 .action-btn.danger {
     color: #b91c1c;
     border-color: #fecaca;
+}
+
+.action-btn.secondary {
+    background: #e5e7eb;
+    border-color: #e5e7eb;
+    color: #333;
 }
 
 
@@ -570,12 +609,17 @@ tbody tr:hover {
     width: 100%;
     max-width: 550px;
     max-height: 90vh;
-    overflow-y: auto;
     border-radius: 5px;
     padding: 22px;
+
+    /* naka-lock ang header at footer, ang laman lang ang nag-i-scroll */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .modal-header {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -594,6 +638,12 @@ tbody tr:hover {
     font-size: 25px;
     cursor: pointer;
     color: #64748b;
+}
+
+#modalBody {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .detail-row {
@@ -615,11 +665,57 @@ tbody tr:hover {
 }
 
 .modal-actions {
+    flex-shrink: 0;
     display: flex;
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 20px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* Walang linya at espasyo kapag walang button (hal. Resident details) */
+.modal-actions:empty {
+    display: none;
+}
+
+
+/* REJECT REASON FORM */
+
+.reject-form {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.reject-form label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.reject-form .required {
+    color: #dc2626;
+}
+
+.reject-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.reject-form textarea:focus {
+    outline: none;
+    border-color: #b91c1c;
+}
+
+.reject-form .error-msg {
+    text-align: left;
+    margin-bottom: 0;
 }
 
 
@@ -646,17 +742,25 @@ tbody tr:hover {
     }
 
     .sidebar {
+        position: static;
+        height: auto;
         width: 100%;
         padding: 12px;
+        overflow: visible;
+    }
+
+    .sidebar > div:first-child {
+        flex: none;
+    }
+
+    .nav-menu {
+        overflow: visible;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 
     .brand-mini {
         margin-bottom: 12px;
-    }
-
-    .nav-menu {
-        flex-direction: row;
-        flex-wrap: wrap;
     }
 
     .nav-link {
@@ -708,6 +812,7 @@ tbody tr:hover {
         gap: 5px;
     }
 }
+
 
 /* Toast Notifications */
 .toast-container {
@@ -776,4 +881,105 @@ tbody tr:hover {
         opacity: 0;
         transform: translateX(30px);
     }
+}
+
+
+/* UPLOADED REQUIREMENTS */
+
+.attachments-section {
+    padding: 12px 0;
+    font-size: 13px;
+}
+
+.attachments-section > strong {
+    display: block;
+    color: #475569;
+    margin-bottom: 10px;
+}
+
+.attachment-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    color: #64748b;
+}
+
+.attachment-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.attachment-thumb {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: #f8fafc;
+    cursor: zoom-in;
+}
+
+.attachment-file {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 110px;
+    padding: 6px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 4px;
+    background: #f8fafc;
+    color: #2d6a4f;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+}
+
+.attachment-file:hover {
+    background: #eaf1ed;
+}
+
+.attachment-file.missing {
+    color: #94a3b8;
+    font-weight: normal;
+}
+
+.attachment-name {
+    font-size: 12px;
+    color: #475569;
+    text-align: center;
+    word-break: break-word;
+}
+
+
+/* IMAGE PREVIEW (LIGHTBOX) */
+
+.lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1500;
+    cursor: zoom-out;
+}
+
+.lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 15px;
+    right: 22px;
+    border: none;
+    background: none;
+    color: white;
+    font-size: 36px;
+    cursor: pointer;
 }
