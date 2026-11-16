@@ -13,11 +13,6 @@ import {
     onSnapshot,
     updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-import {
-    getStorage,
-    ref,
-    getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-storage.js";
 
 // =====================================
 // SESSION LOGIN
@@ -225,273 +220,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return key.charAt(0).toUpperCase() + key.slice(1);
     }
 
-    // =====================================
-    // 5B. UPLOADED REQUIREMENTS (ATTACHMENTS)
-    // =====================================
-    // Binabasa nito ang mga file na in-upload ng resident sa app.
-    // Kung iba ang pangalan ng field sa Firestore ninyo, idagdag lang
-    // sa ATTACHMENT_FIELDS sa ibaba.
-
-    const ATTACHMENT_FIELDS = [
-        "requirements", "requirement", "attachments", "attachment",
-        "files", "uploads", "uploadedFiles", "requirementFiles",
-        "requirementUrls", "documents", "images", "photos",
-        "fileUrl", "imageUrl", "proofUrl", "validId", "idUrl"
-    ];
-
-    const URL_KEYS = [
-        "url", "downloadURL", "downloadUrl", "fileUrl",
-        "imageUrl", "link", "src", "path", "storagePath"
-    ];
-
-    const NAME_KEYS = ["name", "fileName", "filename", "label", "title"];
-
-    // Mga URL lang na ligtas buksan/ipakita
-    const SAFE_URL = /^(https?:\/\/|data:image\/|data:application\/pdf)/i;
-
-    function prettyLabel(key) {
-        const text = String(key)
-            .replace(/([a-z])([A-Z])/g, "$1 $2")
-            .replace(/[_-]+/g, " ")
-            .trim();
-
-        return text.charAt(0).toUpperCase() + text.slice(1);
-    }
-
-    function firstString(obj, keys) {
-        for (let i = 0; i < keys.length; i++) {
-            if (typeof obj[keys[i]] === "string" && obj[keys[i]]) {
-                return obj[keys[i]];
-            }
-        }
-        return "";
-    }
-
-    // URL, data URI, gs:// o storage path lang ang tatanggapin
-    function looksLikeFile(text) {
-        return /^(https?:|data:|gs:)/i.test(text) ||
-            /^[^\s]+\/.+\.[A-Za-z0-9]{2,5}$/.test(text);
-    }
-
-    function collectAttachments(value, label, list) {
-
-        if (!value) return;
-
-        if (Array.isArray(value)) {
-            value.forEach(function (item, index) {
-                const itemLabel = value.length > 1
-                    ? label + " " + (index + 1)
-                    : label;
-                collectAttachments(item, itemLabel, list);
-            });
-            return;
-        }
-
-        if (typeof value === "string") {
-            if (looksLikeFile(value)) {
-                list.push({ url: value, name: label, type: "" });
-            }
-            return;
-        }
-
-        if (typeof value !== "object" || typeof value.toDate === "function") {
-            return;
-        }
-
-        const url = firstString(value, URL_KEYS);
-
-        if (url) {
-            if (looksLikeFile(url)) {
-                list.push({
-                    url: url,
-                    name: firstString(value, NAME_KEYS) || label,
-                    type: firstString(value, ["contentType", "mimeType", "type"])
-                });
-            }
-            return;
-        }
-
-        // Map ng mga file (hal. { validId: "...", cedula: "..." })
-        Object.keys(value).forEach(function (key) {
-            collectAttachments(value[key], prettyLabel(key), list);
-        });
-    }
-
-    function extractAttachments(data) {
-        const list = [];
-
-        ATTACHMENT_FIELDS.forEach(function (field) {
-            if (data[field]) {
-                collectAttachments(data[field], prettyLabel(field), list);
-            }
-        });
-
-        // Alisin ang doble
-        const seen = new Set();
-
-        return list.filter(function (item) {
-            if (seen.has(item.url)) return false;
-            seen.add(item.url);
-            return true;
-        });
-    }
-
-    function isImageAttachment(item) {
-        const cleanUrl = item.url.split("?")[0].split("#")[0];
-
-        return /^data:image\//i.test(item.url) ||
-            /^image\//i.test(item.type || "") ||
-            /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(cleanUrl) ||
-            /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(item.name || "");
-    }
-
-    // Kung storage path ang nakasave (hindi buong link), kunin ang download link
-    async function resolveAttachmentUrl(url) {
-
-        if (/^(https?:|data:)/i.test(url)) return url;
-
-        try {
-            return await getDownloadURL(ref(getStorage(), url));
-        } catch (error) {
-            console.error("Attachment error:", error.code || error.message, url);
-            return "";
-        }
-    }
-
-    function buildFileLink(item) {
-        const link = document.createElement("a");
-
-        link.className = "attachment-file";
-        link.href = item.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = "Open file";
-
-        if (/^data:/i.test(item.url)) {
-            link.download = item.name || "requirement";
-        }
-
-        return link;
-    }
-
-    function buildAttachmentItem(item) {
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "attachment-item";
-
-        const caption = document.createElement("span");
-        caption.className = "attachment-name";
-        caption.textContent = item.name || "Requirement";
-
-        if (!item.url || !SAFE_URL.test(item.url)) {
-            const missing = document.createElement("div");
-            missing.className = "attachment-file missing";
-            missing.textContent = "File unavailable";
-
-            wrapper.appendChild(missing);
-            wrapper.appendChild(caption);
-            return wrapper;
-        }
-
-        if (isImageAttachment(item)) {
-            const img = document.createElement("img");
-
-            img.className = "attachment-thumb";
-            img.src = item.url;
-            img.alt = item.name || "Requirement";
-            img.loading = "lazy";
-
-            img.addEventListener("click", function () {
-                openLightbox(item.url, item.name);
-            });
-
-            // Kung hindi ma-load bilang image, gawing link
-            img.addEventListener("error", function () {
-                img.replaceWith(buildFileLink(item));
-            });
-
-            wrapper.appendChild(img);
-        } else {
-            wrapper.appendChild(buildFileLink(item));
-        }
-
-        wrapper.appendChild(caption);
-        return wrapper;
-    }
-
-    let viewedRequestId = null;
-
-    async function loadAttachments(request) {
-
-        const box = document.getElementById("attachmentList");
-        if (!box) return;
-
-        viewedRequestId = request.id;
-
-        if (request.attachments.length === 0) {
-            box.textContent = "No uploaded requirements.";
-            return;
-        }
-
-        box.textContent = "Loading requirements...";
-
-        const resolved = await Promise.all(
-            request.attachments.map(async function (item) {
-                return Object.assign({}, item, {
-                    url: await resolveAttachmentUrl(item.url)
-                });
-            })
-        );
-
-        // Kung ibang request na ang nakabukas, huwag nang ituloy
-        if (viewedRequestId !== request.id || !document.body.contains(box)) {
-            return;
-        }
-
-        box.innerHTML = "";
-
-        resolved.forEach(function (item) {
-            box.appendChild(buildAttachmentItem(item));
-        });
-    }
-
-    // Malaking preview ng image
-    function openLightbox(url, name) {
-
-        closeLightbox();
-
-        const overlay = document.createElement("div");
-        overlay.id = "lightbox";
-        overlay.className = "lightbox";
-
-        const img = document.createElement("img");
-        img.src = url;
-        img.alt = name || "Requirement";
-
-        const closeButton = document.createElement("button");
-        closeButton.type = "button";
-        closeButton.className = "lightbox-close";
-        closeButton.setAttribute("aria-label", "Close");
-        closeButton.innerHTML = "&times;";
-
-        overlay.appendChild(img);
-        overlay.appendChild(closeButton);
-
-        overlay.addEventListener("click", closeLightbox);
-
-        document.body.appendChild(overlay);
-    }
-
-    function closeLightbox() {
-        const overlay = document.getElementById("lightbox");
-        if (overlay) overlay.remove();
-    }
-
-    document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") closeLightbox();
-    });
-
-
     function mapRequest(snapshot) {
         const data = snapshot.data();
 
@@ -514,8 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
             purpose: data.purpose || "-",
             status: normalizeStatus(data.status),
             remarks: data.remarks || "",
-            rejectionReason: data.rejectionReason || "",
-            attachments: extractAttachments(data)
+            rejectionReason: data.rejectionReason || ""
         };
     }
 
@@ -976,18 +703,11 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
 
             ${rejectionRow}
-
-            <div class="attachments-section">
-                <strong>Submitted Requirements</strong>
-                <div id="attachmentList" class="attachment-list">Loading...</div>
-            </div>
         `;
 
         showModalActions(request);
 
         detailsModal.classList.remove("hidden");
-
-        loadAttachments(request);
     }
 
     // Mga button ng modal (Approve / Reject / Ready / Complete)
